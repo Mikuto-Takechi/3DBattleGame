@@ -42,11 +42,11 @@ public class Player : MonoBehaviour
             {
                 0 => "Right Slash",
                 1 => "Upper Right Slash",
-                2 => "ã",
-                3 => "¶ã",
+                2 => "Upper Slash",
+                3 => "Upper Left Slash",
                 4 => "Left Slash",
-                5 => "¶‰º",
-                6 => "‰º",
+                5 => "Lower Left Slash",
+                6 => "Lower Slash",
                 7 => "Lower Right Slash",
                 _ => string.Empty,
             });

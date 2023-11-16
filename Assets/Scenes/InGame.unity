@@ -2625,11 +2625,11 @@ MonoBehaviour:
     autoRotation: 0
     spaceType: 0
     parent: {fileID: 0}
-    position: {x: 0, y: 0, z: 0}
-    rotation: {x: 0, y: 0, z: 0, w: 0}
+    position: {x: 0.5483187, y: 2.3923497, z: -0.24005233}
+    rotation: {x: -0.405397, y: 0.3740134, z: 0.25353086, w: 0.794663}
     headWeight: 1
     eyesWeight: 0
-    swivelRotation: 0
+    swivelRotation: -90
     swivelPosition: {x: 0, y: 0, z: 0}
     parentPath: 
   - enable: 0
@@ -2658,7 +2658,7 @@ MonoBehaviour:
     parentPath: 
   originalIkData: []
   selectionData: []
-  lastSelectAnimationClip: {fileID: 7400000, guid: b29b291b71248df468731a561eb489e9, type: 2}
+  lastSelectAnimationClip: {fileID: 7400000, guid: f4dfa4cdc75edb9488c6c7e02e57d48d, type: 2}
   handPoseList: []
   blendShapeList: []
 --- !u!114 &1914674387
