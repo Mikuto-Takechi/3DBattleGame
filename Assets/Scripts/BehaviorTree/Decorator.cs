@@ -1,7 +1,7 @@
 namespace Takechi.BT
 {
     /// <summary>
-    /// デコレータの基本クラス、直下の子を1つしか持てない
+    /// デコレータの基本クラス、直下の子ノードを1つしか持てない
     /// </summary>
     public abstract class Decorator : BehaviorBase
     {
@@ -13,7 +13,10 @@ namespace Takechi.BT
     }
 
     /// <summary>
-    /// 子ノードを指定した回数繰り返す。
+    /// 子ノードを指定した回数繰り返す。<br/>
+    /// 子ノードが常にSuccessなら繰り返した後にSuccessを返す。<br/>
+    /// 子ノードがFailureを返した場合はループを中断し、Failureを返す。<br/>
+    /// 子ノードがRunningならこのノードもRunningを返し、カウントアップせずに子ノードの処理を待ちます。
     /// </summary>
     public class Repeat : Decorator
     {
@@ -51,7 +54,83 @@ namespace Takechi.BT
 
         public override string ToString()
         {
-            return "Repeat Until : " + count + " / " + limit;
+            return "Repeat : " + count + " / " + limit;
+        }
+    }
+    /// <summary>
+    /// 子ノードがFailureを返した時にはSuccessを返し、Successを返したときにはFailureを返す。<br/>
+    /// 子ノードがRunningを返した時には、このノードもRunningを返す。
+    /// </summary>
+    public class Inverter : Decorator
+    {
+        public Inverter(BehaviorBase child) : base(child){}
+
+        public override BTState Tick()
+        {
+            switch (child.Tick())
+            {
+                case BTState.Running:
+                    return BTState.Running;
+                case BTState.Failure:
+                    return BTState.Success;
+                case BTState.Success:
+                    return BTState.Failure;
+                default:
+                    return BTState.Running;
+            }
+        }
+
+        public override string ToString()
+        {
+            return "Inverter :";
+        }
+    }
+    /// <summary>
+    /// 子ノードがRunningを返した時には、このノードもRunningを返す。<br/>
+    /// そうでない場合は、常にSuccessを返す。
+    /// </summary>
+    public class ForceSuccess : Decorator
+    {
+        public ForceSuccess(BehaviorBase child) : base(child) { }
+
+        public override BTState Tick()
+        {
+            switch (child.Tick())
+            {
+                case BTState.Running:
+                    return BTState.Running;
+                default:
+                    return BTState.Success;
+            }
+        }
+
+        public override string ToString()
+        {
+            return "ForceSuccess :";
+        }
+    }
+    /// <summary>
+    /// 子ノードがRunningを返した時には、このノードもRunningを返す。<br/>
+    /// そうでない場合は、常にFailureを返す。
+    /// </summary>
+    public class ForceFailure : Decorator
+    {
+        public ForceFailure(BehaviorBase child) : base(child) { }
+
+        public override BTState Tick()
+        {
+            switch (child.Tick())
+            {
+                case BTState.Running:
+                    return BTState.Running;
+                default:
+                    return BTState.Failure;
+            }
+        }
+
+        public override string ToString()
+        {
+            return "ForceFailure :";
         }
     }
 }

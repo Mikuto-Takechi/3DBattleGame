@@ -234,46 +234,6 @@ namespace Takechi.BT
             }
         }
     }
-
-    /// <summary>
-    /// 子どもたちのブロックを何度も走らせる。
-    /// </summary>
-    //public class Repeat : Block
-    //{
-    //    public int count = 1;
-    //    int currentCount = 0;
-    //    public Repeat(int count)
-    //    {
-    //        this.count = count;
-    //    }
-    //    public override BTState Tick()
-    //    {
-    //        if (count > 0 && currentCount < count)
-    //        {
-    //            var result = base.Tick();
-    //            switch (result)
-    //            {
-    //                case BTState.Running:
-    //                    return BTState.Running;
-    //                default:
-    //                    currentCount++;
-    //                    if (currentCount == count)
-    //                    {
-    //                        currentCount = 0;
-    //                        return BTState.Success;
-    //                    }
-    //                    return BTState.Running;
-    //            }
-    //        }
-    //        return BTState.Success;
-    //    }
-
-    //    public override string ToString()
-    //    {
-    //        return "Repeat Until : " + currentCount + " / " + count;
-    //    }
-    //}
-
     public class RandomSequence : Block
     {
         int[] m_Weight = null;
