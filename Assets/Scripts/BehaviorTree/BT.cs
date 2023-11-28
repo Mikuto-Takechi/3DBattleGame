@@ -14,10 +14,6 @@ namespace Takechi.BT
 
     public static class BT
     {
-        //public static T Block<T>() where T : Block, new() => new T();
-        //public static T Branch<T>() where T : Composite, new() => new T();
-        //public static T Node<T>() where T : BehaviorBase, new() => new T();
-
         public static Root Root() => new Root();    //  Block
         public static Sequence Sequence() => new Sequence();    //  Branch
         public static Selector Selector(bool shuffle = false) => new Selector(shuffle); //  Branch
@@ -46,77 +42,6 @@ namespace Takechi.BT
     {
         public abstract BTState Tick();
     }
-    /// <summary>
-    /// メソッドを呼び出すか、コルーチンを実行する。
-    /// </summary>
-    public class Action : BehaviorBase
-    {
-        System.Action fn;
-        System.Func<IEnumerator<BTState>> coroutineFactory;
-        IEnumerator<BTState> coroutine;
-        public Action(System.Action fn)
-        {
-            this.fn = fn;
-        }
-        public Action(System.Func<IEnumerator<BTState>> coroutineFactory)
-        {
-            this.coroutineFactory = coroutineFactory;
-        }
-        public override BTState Tick()
-        {
-            if (fn != null)
-            {
-                fn();
-                return BTState.Success;
-            }
-            else
-            {
-                if (coroutine == null)
-                    coroutine = coroutineFactory();
-                if (!coroutine.MoveNext())
-                {
-                    coroutine = null;
-                    return BTState.Success;
-                }
-                var result = coroutine.Current;
-                if (result == BTState.Running)
-                    return BTState.Running;
-                else
-                {
-                    coroutine = null;
-                    return result;
-                }
-            }
-        }
-
-        public override string ToString()
-        {
-            return "Action : " + fn.Method.ToString();
-        }
-    }
-
-    /// <summary>
-    /// メソッドを呼び出し、メソッドが真を返せば成功を返し、そうでなければ失敗を返す。
-    /// </summary>
-    public class Condition : BehaviorBase
-    {
-        public System.Func<bool> fn;
-
-        public Condition(System.Func<bool> fn)
-        {
-            this.fn = fn;
-        }
-        public override BTState Tick()
-        {
-            return fn() ? BTState.Success : BTState.Failure;
-        }
-
-        public override string ToString()
-        {
-            return "Condition : " + fn.Method.ToString();
-        }
-    }
-
     public class ConditionalBranch : Block
     {
         public System.Func<bool> fn;
@@ -205,147 +130,6 @@ namespace Takechi.BT
             }
         }
     }
-
-    public class Root : Block
-    {
-        public bool isTerminated = false;
-
-        public override BTState Tick()
-        {
-            if (isTerminated) return BTState.Abort;
-            while (true)
-            {
-                switch (children[activeChild].Tick())
-                {
-                    case BTState.Running:
-                        return BTState.Running;
-                    case BTState.Abort:
-                        isTerminated = true;
-                        return BTState.Abort;
-                    default:
-                        activeChild++;
-                        if (activeChild == children.Count)
-                        {
-                            activeChild = 0;
-                            return BTState.Success;
-                        }
-                        continue;
-                }
-            }
-        }
-    }
-    public class RandomSequence : Block
-    {
-        int[] m_Weight = null;
-        int[] m_AddedWeight = null;
-
-        /// <summary>
-        /// 再びトリガーされるたびに、ランダムな子供を1人選ぶ。
-        /// </summary>
-        /// <param name="weight">すべての子ノードが同じウェイトを持つように、nullのままにする。 
-        /// 子ノードよりウェイトが少ない場合、後続の子ノードはすべてウェイト = 1になります。</param>
-        public RandomSequence(int[] weight = null)
-        {
-            activeChild = -1;
-
-            m_Weight = weight;
-        }
-
-        public override Composite OpenBranch(params BehaviorBase[] children)
-        {
-            m_AddedWeight = new int[children.Length];
-
-            for (int i = 0; i < children.Length; ++i)
-            {
-                int weight = 0;
-                int previousWeight = 0;
-
-                if (m_Weight == null || m_Weight.Length <= i)
-                {//そのウェイトがなければ、ウェイトを1に設定する。
-                    weight = 1;
-                }
-                else
-                    weight = m_Weight[i];
-
-                if (i > 0)
-                    previousWeight = m_AddedWeight[i - 1];
-
-                m_AddedWeight[i] = weight + previousWeight;
-            }
-
-            return base.OpenBranch(children);
-        }
-
-        public override BTState Tick()
-        {
-            if (activeChild == -1)
-                PickNewChild();
-
-            var result = children[activeChild].Tick();
-
-            switch (result)
-            {
-                case BTState.Running:
-                    return BTState.Running;
-                default:
-                    PickNewChild();
-                    return result;
-            }
-        }
-
-        void PickNewChild()
-        {
-            int choice = Random.Range(0, m_AddedWeight[m_AddedWeight.Length - 1]);
-
-            for (int i = 0; i < m_AddedWeight.Length; ++i)
-            {
-                if (choice - m_AddedWeight[i] <= 0)
-                {
-                    activeChild = i;
-                    break;
-                }
-            }
-        }
-
-        public override string ToString()
-        {
-            return "Random Sequence : " + activeChild + "/" + children.Count;
-        }
-    }
-
-
-    /// <summary>
-    /// 数秒間実行を停止する。
-    /// </summary>
-    public class Wait : BehaviorBase
-    {
-        public float seconds = 0;
-        float future = -1;
-        public Wait(float seconds)
-        {
-            this.seconds = seconds;
-        }
-
-        public override BTState Tick()
-        {
-            if (future < 0)
-                future = Time.time + seconds;
-
-            if (Time.time >= future)
-            {
-                future = -1;
-                return BTState.Success;
-            }
-            else
-                return BTState.Running;
-        }
-
-        public override string ToString()
-        {
-            return "Wait : " + (future - Time.time) + " / " + seconds;
-        }
-    }
-
     /// <summary>
     /// アニメーターのトリガーをアクティブにする。
     /// </summary>
@@ -514,32 +298,6 @@ namespace Takechi.BT
     //        return "Wait For Animator Signal : " + name;
     //    }
     //}
-
-    public class Terminate : BehaviorBase
-    {
-
-        public override BTState Tick()
-        {
-            return BTState.Abort;
-        }
-    }
-
-    public class Log : BehaviorBase
-    {
-        string msg;
-
-        public Log(string msg)
-        {
-            this.msg = msg;
-        }
-
-        public override BTState Tick()
-        {
-            Debug.Log(msg);
-            return BTState.Success;
-        }
-    }
-
 }
 
 #if UNITY_EDITOR

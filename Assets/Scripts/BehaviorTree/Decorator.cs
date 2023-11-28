@@ -1,3 +1,5 @@
+using UnityEngine;
+
 namespace Takechi.BT
 {
     /// <summary>
@@ -63,7 +65,7 @@ namespace Takechi.BT
     /// </summary>
     public class Inverter : Decorator
     {
-        public Inverter(BehaviorBase child) : base(child){}
+        public Inverter(BehaviorBase child) : base(child) { }
 
         public override BTState Tick()
         {
@@ -131,6 +133,48 @@ namespace Takechi.BT
         public override string ToString()
         {
             return "ForceFailure :";
+        }
+    }
+    /// <summary>
+    /// 指定した秒数Running状態を維持してから子ノードの評価を始めるデコレータ。
+    /// </summary>
+    public class Delay : Decorator
+    {
+        public float seconds = 0;
+        float future = -1;
+        public Delay(float seconds, BehaviorBase child) : base(child)
+        {
+            this.seconds = seconds;
+        }
+
+        public override BTState Tick()
+        {
+            if (future < 0)
+                future = Time.time + seconds;
+
+            if (Time.time >= future)
+            {
+                switch (child.Tick())
+                {
+                    case BTState.Running:
+                        return BTState.Running;
+                    case BTState.Failure:
+                        future = -1;
+                        return BTState.Failure;
+                    case BTState.Success:
+                        future = -1;
+                        return BTState.Success;
+                    default:
+                        return BTState.Running;
+                }
+            }
+            else
+                return BTState.Running;
+        }
+
+        public override string ToString()
+        {
+            return "Delay : " + (future - Time.time) + " / " + seconds;
         }
     }
 }
