@@ -10,18 +10,17 @@ public class BTEnemy : MonoBehaviour
     {
         _root = BT.Root();
 
-        _root.OpenBranch(
-                BT.Sequence().OpenBranch(
-                    BT.Repeat(3,
-                        BT.Sequence().OpenBranch(
-                            BT.Log("タスク1"),
-                            BT.Log("タスク2"),
-                            BT.Log("タスク3")
-                            )
-                        ),
-                    BT.Log("タスク4")
-               )
-        );
+        _root.AddChildren(
+            new Sequence().AddChildren(
+                new ParallelSelector().AddChildren(
+                    new Condition(()=>false),
+                    new Sequence().AddChildren(
+                        new Log("索敵3秒"),
+                        new Wait(3)
+                        )
+                    )
+                )
+            );
         StartCoroutine(Loop());
     }
     WaitForSeconds wait = new WaitForSeconds(1);

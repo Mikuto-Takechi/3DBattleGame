@@ -1,21 +1,26 @@
 using System.Collections.Generic;
 using UnityEngine;
-using static Unity.VisualScripting.Metadata;
 
 namespace Takechi.BT
 {
-    public abstract class Composite : BehaviorBase
+    public abstract class Composite : Node
     {
         protected int activeChild;
-        protected List<BehaviorBase> children = new List<BehaviorBase>();
-        public virtual Composite OpenBranch(params BehaviorBase[] children)
+        protected List<Node> children = new List<Node>();
+        public Composite(List<Node> children = null)
         {
-            for (var i = 0; i < children.Length; i++)
+            if (children == null) return;
+            for (var i = 0; i < children.Count; i++)
+                this.children.Add(children[i]);
+        }
+        public virtual Composite OpenBranch(List<Node> children)
+        {
+            for (var i = 0; i < children.Count; i++)
                 this.children.Add(children[i]);
             return this;
         }
 
-        public List<BehaviorBase> Children()
+        public List<Node> Children()
         {
             return children;
         }
@@ -40,6 +45,7 @@ namespace Takechi.BT
     }
     public class Sequence : Composite
     {
+        public Sequence(List<Node> children) : base(children) { }
         public override BTState Tick()
         {
             var childState = children[activeChild].Tick();
@@ -72,7 +78,7 @@ namespace Takechi.BT
     /// </summary>
     public class Selector : Composite
     {
-        public Selector(bool shuffle)
+        public Selector(bool shuffle, List<Node> children = null) : base(children)
         {
             if (shuffle)
             {
@@ -87,6 +93,7 @@ namespace Takechi.BT
                 }
             }
         }
+        public Selector(List<Node> children) : base(children) { }
 
         public override BTState Tick()
         {
@@ -117,7 +124,7 @@ namespace Takechi.BT
     public class Root : Composite
     {
         public bool isTerminated = false;
-
+        public Root(List<Node> children) : base(children) { }
         public override BTState Tick()
         {
             if (isTerminated) return BTState.Abort;
@@ -152,18 +159,18 @@ namespace Takechi.BT
         /// </summary>
         /// <param name="weight">すべての子ノードが同じウェイトを持つように、nullのままにする。 
         /// 子ノードよりウェイトが少ない場合、後続の子ノードはすべてウェイト = 1になります。</param>
-        public RandomSequence(int[] weight = null)
+        public RandomSequence(int[] weight = null, List < Node > children = null) : base(children)
         {
             activeChild = -1;
 
             m_Weight = weight;
         }
 
-        public override Composite OpenBranch(params BehaviorBase[] children)
+        public override Composite OpenBranch(List<Node> children)
         {
-            m_AddedWeight = new int[children.Length];
+            m_AddedWeight = new int[children.Count];
 
-            for (int i = 0; i < children.Length; ++i)
+            for (int i = 0; i < children.Count; ++i)
             {
                 int weight = 0;
                 int previousWeight = 0;
@@ -227,6 +234,7 @@ namespace Takechi.BT
     /// </summary>
     public class Parallel : Composite
     {
+        public Parallel(List<Node> children) :base(children) { }
         public override BTState Tick()
         {
             bool shouldWait = false;
@@ -243,7 +251,7 @@ namespace Takechi.BT
                 }
             }
 
-            if (shouldWait)
+            if(shouldWait)
                 return BTState.Running;
             else
                 return BTState.Success;
@@ -256,6 +264,7 @@ namespace Takechi.BT
     /// </summary>
     public class ParallelSelector : Composite
     {
+        public ParallelSelector(List<Node> children) : base(children) { }
         public override BTState Tick()
         {
             bool shouldWait = false;

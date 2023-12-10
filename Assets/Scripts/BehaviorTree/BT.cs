@@ -14,16 +14,20 @@ namespace Takechi.BT
 
     public static class BT
     {
-        public static Root Root() => new Root();    //  Block
-        public static Sequence Sequence() => new Sequence();    //  Branch
-        public static Selector Selector(bool shuffle = false) => new Selector(shuffle); //  Branch
-        public static Action RunCoroutine(System.Func<IEnumerator<BTState>> coroutine) => new Action(coroutine);    //  Node
-        public static Action Call(System.Action fn) => new Action(fn);  //  Node
-        public static ConditionalBranch If(System.Func<bool> fn) => new ConditionalBranch(fn);  //  Block
-        public static While While(System.Func<bool> fn) => new While(fn);   //  Block
+        public static Root Root(List<Node> children = null) => new Root(children);
+        public static Sequence Sequence(List<Node> children = null) => new Sequence(children);
+        public static Parallel Parallel(List<Node> children = null) => new Parallel(children);
+        public static Selector Selector(bool shuffle = false) => new Selector(shuffle);
+        public static Selector Selector(List<Node> children = null) => new Selector(children);
+        public static ParallelSelector ParallelSelector(List<Node> children = null) => new ParallelSelector(children);
+        public static Action Action(System.Func<IEnumerator<BTState>> coroutine) => new Action(coroutine);
+        public static Action Action(System.Action fn) => new Action(fn);
+        public static Inverter Inverter(Node child) => new Inverter(child);
+        public static ConditionalBranch If(System.Func<bool> fn) => new ConditionalBranch(fn);
+        public static While While(System.Func<bool> fn) => new While(fn);
         /// <summary>ノードの一種。条件を満たしていればtrueを出力する。Tick()では成功を出力する</summary>
         public static Condition Condition(System.Func<bool> fn) => new Condition(fn);   //  Node
-        public static Repeat Repeat(int count, BehaviorBase child) => new Repeat(count, child);    //  Decorator
+        public static Repeat Repeat(int count, Node child) => new Repeat(count, child);    //  Decorator
         /// <summary>ノードの一種。指定した秒数待ってから成功を出力する。待ち時間中のTick()ではContinueを出力し続ける</summary>
         public static Wait Wait(float seconds) => new Wait(seconds);    //  Node
         public static Trigger Trigger(Animator animator, string name, bool set = true) => new Trigger(animator, name, set); //  Node
@@ -38,7 +42,7 @@ namespace Takechi.BT
 
     }
 
-    public abstract class BehaviorBase
+    public abstract class Node
     {
         public abstract BTState Tick();
     }
@@ -133,7 +137,7 @@ namespace Takechi.BT
     /// <summary>
     /// アニメーターのトリガーをアクティブにする。
     /// </summary>
-    public class Trigger : BehaviorBase
+    public class Trigger : Node
     {
         Animator animator;
         int id;
@@ -168,7 +172,7 @@ namespace Takechi.BT
     /// <summary>
     /// アニメーターにブール値を設定する。
     /// </summary>
-    public class SetBool : BehaviorBase
+    public class SetBool : Node
     {
         Animator animator;
         int id;
@@ -198,7 +202,7 @@ namespace Takechi.BT
     /// <summary>
     /// アニメーターがある状態に達するのを待つ。
     /// </summary>
-    public class WaitForAnimatorState : BehaviorBase
+    public class WaitForAnimatorState : Node
     {
         Animator animator;
         int id;
@@ -234,7 +238,7 @@ namespace Takechi.BT
     /// <summary>
     /// ゲームオブジェクトのアクティブフラグを設定する。
     /// </summary>
-    public class SetActive : BehaviorBase
+    public class SetActive : Node
     {
 
         GameObject gameObject;

@@ -44,4 +44,6 @@ public class Player : MonoBehaviour
             _animator.SetBool("IsBlocked", false);
         }
     }
+    public void Swing() => AudioManager.Instance.PlaySE("ëfêUÇË");
+    public void ShieldBlock() => AudioManager.Instance.PlaySE("ç\Ç¶ÇÈ");
 }

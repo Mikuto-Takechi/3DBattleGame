@@ -6,7 +6,7 @@ namespace Takechi.BT
     /// <summary>
     /// メソッドを呼び出すか、コルーチンを実行する。
     /// </summary>
-    public class Action : BehaviorBase
+    public class Action : Node
     {
         System.Action fn;
         System.Func<IEnumerator<BTState>> coroutineFactory;
@@ -54,7 +54,7 @@ namespace Takechi.BT
     /// <summary>
     /// メソッドを呼び出し、メソッドが真を返せば成功を返し、そうでなければ失敗を返す。
     /// </summary>
-    public class Condition : BehaviorBase
+    public class Condition : Node
     {
         public System.Func<bool> fn;
 
@@ -75,7 +75,7 @@ namespace Takechi.BT
     /// <summary>
     /// 指定秒数待ってからSuccessを返す。
     /// </summary>
-    public class Wait : BehaviorBase
+    public class Wait : Node
     {
         public float seconds = 0;
         float future = -1;
@@ -103,16 +103,15 @@ namespace Takechi.BT
             return "Wait : " + (future - Time.time) + " / " + seconds;
         }
     }
-    public class Terminate : BehaviorBase
+    public class Terminate : Node
     {
-
         public override BTState Tick()
         {
             return BTState.Abort;
         }
     }
 
-    public class Log : BehaviorBase
+    public class Log : Node
     {
         string msg;
 

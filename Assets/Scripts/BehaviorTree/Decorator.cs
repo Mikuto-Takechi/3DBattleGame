@@ -5,10 +5,10 @@ namespace Takechi.BT
     /// <summary>
     /// デコレータの基本クラス、直下の子ノードを1つしか持てない
     /// </summary>
-    public abstract class Decorator : BehaviorBase
+    public abstract class Decorator : Node
     {
-        protected BehaviorBase child;
-        public Decorator(BehaviorBase child)
+        protected Node child;
+        public Decorator(Node child)
         {
             this.child = child;
         }
@@ -25,7 +25,7 @@ namespace Takechi.BT
         public int limit = 1;
         int count = 0;
         /// <summary>ノードと繰り返し回数を渡す</summary>
-        public Repeat(int count, BehaviorBase child) : base(child)
+        public Repeat(int count, Node child) : base(child)
         {
             this.limit = count;
         }
@@ -65,7 +65,7 @@ namespace Takechi.BT
     /// </summary>
     public class Inverter : Decorator
     {
-        public Inverter(BehaviorBase child) : base(child) { }
+        public Inverter(Node child) : base(child) { }
 
         public override BTState Tick()
         {
@@ -93,7 +93,7 @@ namespace Takechi.BT
     /// </summary>
     public class ForceSuccess : Decorator
     {
-        public ForceSuccess(BehaviorBase child) : base(child) { }
+        public ForceSuccess(Node child) : base(child) { }
 
         public override BTState Tick()
         {
@@ -117,7 +117,7 @@ namespace Takechi.BT
     /// </summary>
     public class ForceFailure : Decorator
     {
-        public ForceFailure(BehaviorBase child) : base(child) { }
+        public ForceFailure(Node child) : base(child) { }
 
         public override BTState Tick()
         {
@@ -142,7 +142,7 @@ namespace Takechi.BT
     {
         public float seconds = 0;
         float future = -1;
-        public Delay(float seconds, BehaviorBase child) : base(child)
+        public Delay(float seconds, Node child) : base(child)
         {
             this.seconds = seconds;
         }
